@@ -1,21 +1,42 @@
 "use client";
 
-import { use } from "react";
-import { useQuery } from "convex/react";
+import { use, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useQuery, useMutation } from "convex/react";
+import { useUser } from "@clerk/nextjs";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { RatingBreakdown } from "@/components/RatingBreakdown";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar, faMapMarkerAlt, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { faStar, faMapMarkerAlt, faArrowLeft, faPenToSquare, faTrash, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 import Link from "next/link";
 import { formatDate } from "@/lib/utils";
 
 export default function BurgerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const router = useRouter();
+  const { user } = useUser();
   const burger = useQuery(api.burgers.getById, { id: id as Id<"burgerLogs"> });
+  const remove = useMutation(api.burgers.remove);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const isOwner = !!user && !!burger && user.id === burger.userId;
+
+  const handleDelete = async () => {
+    if (!user || !burger) return;
+    setDeleting(true);
+    try {
+      await remove({ id: burger._id, userId: user.id });
+      router.push("/");
+    } catch {
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  };
 
   if (burger === undefined) {
     return (
@@ -37,10 +58,53 @@ export default function BurgerDetailPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="max-w-2xl mx-auto w-full px-4 py-6">
-      <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors">
-        <FontAwesomeIcon icon={faArrowLeft} />
-        Back to feed
-      </Link>
+      <div className="flex items-center justify-between mb-4">
+        <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <FontAwesomeIcon icon={faArrowLeft} />
+          Back to feed
+        </Link>
+        {isOwner && (
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/burger/${id}/edit`}
+              className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg hover:bg-muted"
+            >
+              <FontAwesomeIcon icon={faPenToSquare} />
+              Edit
+            </Link>
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="inline-flex items-center gap-2 text-sm font-medium text-destructive hover:text-destructive/80 transition-colors px-3 py-1.5 rounded-lg hover:bg-destructive/10"
+            >
+              <FontAwesomeIcon icon={faTrash} />
+              Delete
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Delete confirmation */}
+      {confirmDelete && (
+        <div className="mb-5 p-4 bg-destructive/10 border border-destructive/20 rounded-xl flex items-center justify-between gap-4">
+          <p className="text-sm font-medium">Delete this burger log?</p>
+          <div className="flex gap-2 shrink-0">
+            <button
+              onClick={() => setConfirmDelete(false)}
+              className="text-sm px-3 py-1.5 rounded-lg bg-muted hover:bg-muted/80 font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="text-sm px-3 py-1.5 rounded-lg bg-destructive text-white font-medium flex items-center gap-1.5 disabled:opacity-60"
+            >
+              {deleting && <FontAwesomeIcon icon={faSpinner} className="animate-spin" />}
+              Delete
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Photo */}
       {burger.photoUrl && (

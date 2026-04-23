@@ -65,6 +65,52 @@ export const create = mutation({
   },
 });
 
+export const update = mutation({
+  args: {
+    id: v.id("burgerLogs"),
+    userId: v.string(),
+    burgerName: v.string(),
+    restaurantName: v.string(),
+    location: v.optional(v.string()),
+    photoStorageId: v.optional(v.id("_storage")),
+    notes: v.optional(v.string()),
+    visitedAt: v.number(),
+    taste: v.number(),
+    freshness: v.number(),
+    presentation: v.number(),
+    sides: v.number(),
+    doneness: v.number(),
+    value: v.number(),
+  },
+  handler: async (ctx, { id, userId, ...fields }) => {
+    const existing = await ctx.db.get(id);
+    if (!existing || existing.userId !== userId) throw new Error("Unauthorized");
+
+    const totalScore =
+      (fields.taste + fields.freshness + fields.presentation + fields.sides + fields.doneness + fields.value) / 6;
+
+    let photoUrl = existing.photoUrl;
+    if (fields.photoStorageId && fields.photoStorageId !== existing.photoStorageId) {
+      photoUrl = (await ctx.storage.getUrl(fields.photoStorageId)) ?? undefined;
+    }
+
+    await ctx.db.patch(id, {
+      ...fields,
+      photoUrl,
+      totalScore: Math.round(totalScore * 10) / 10,
+    });
+  },
+});
+
+export const remove = mutation({
+  args: { id: v.id("burgerLogs"), userId: v.string() },
+  handler: async (ctx, { id, userId }) => {
+    const existing = await ctx.db.get(id);
+    if (!existing || existing.userId !== userId) throw new Error("Unauthorized");
+    await ctx.db.delete(id);
+  },
+});
+
 export const generateUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {
