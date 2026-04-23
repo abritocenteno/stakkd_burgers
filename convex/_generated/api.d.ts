@@ -9,6 +9,7 @@
  */
 
 import type * as burgers from "../burgers.js";
+import type * as social from "../social.js";
 
 import type {
   ApiFromModules,
@@ -18,6 +19,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   burgers: typeof burgers;
+  social: typeof social;
 }>;
 
 /**

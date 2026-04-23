@@ -6,11 +6,12 @@ import { api } from "@/convex/_generated/api";
 import { BurgerCard } from "@/components/BurgerCard";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHamburger, faStar, faTrophy } from "@fortawesome/free-solid-svg-icons";
+import { faHamburger, faStar, faTrophy, faUserGroup } from "@fortawesome/free-solid-svg-icons";
 
 export default function ProfilePage() {
   const { user } = useUser();
   const burgers = useQuery(api.burgers.listByUser, user ? { userId: user.id } : "skip");
+  const followCounts = useQuery(api.social.getFollowCounts, user ? { userId: user.id } : "skip");
 
   const stats = burgers
     ? {
@@ -25,7 +26,7 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-2xl mx-auto w-full px-5 py-6">
-      {/* User info */}
+      {/* User card */}
       <div className="flex items-center gap-4 mb-6 p-5 bg-surface-container-low rounded-[20px] border border-outline-variant/40">
         <Avatar className="h-16 w-16 border-2 border-primary-fixed">
           {user?.imageUrl && <AvatarImage src={user.imageUrl} alt={user.fullName ?? ""} />}
@@ -33,9 +34,24 @@ export default function ProfilePage() {
             {(user?.fullName ?? user?.username ?? "?").slice(0, 2).toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <div>
-          <h2 className="font-heading font-bold text-xl text-on-surface">{user?.fullName ?? user?.username}</h2>
-          <p className="text-sm text-on-surface-variant">{user?.primaryEmailAddress?.emailAddress}</p>
+        <div className="flex-1 min-w-0">
+          <h2 className="font-heading font-bold text-xl text-on-surface truncate">
+            {user?.fullName ?? user?.username}
+          </h2>
+          <p className="text-sm text-on-surface-variant truncate">
+            {user?.primaryEmailAddress?.emailAddress}
+          </p>
+          {followCounts && (
+            <div className="flex items-center gap-3 mt-1.5">
+              <span className="text-xs text-on-surface-variant flex items-center gap-1">
+                <FontAwesomeIcon icon={faUserGroup} className="text-[10px]" />
+                <strong className="text-on-surface">{followCounts.followers}</strong> followers
+              </span>
+              <span className="text-xs text-on-surface-variant">
+                <strong className="text-on-surface">{followCounts.following}</strong> following
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -76,7 +92,7 @@ export default function ProfilePage() {
       {burgers?.length === 0 && (
         <div className="text-center py-12">
           <div className="text-6xl mb-4 opacity-20 select-none">🍔</div>
-          <p className="text-on-surface-variant font-medium">No burgers logged yet</p>
+          <p className="font-heading font-bold text-on-surface-variant">No burgers logged yet</p>
           <p className="text-sm text-on-surface-variant mt-1">Hit the Log tab to get started!</p>
         </div>
       )}

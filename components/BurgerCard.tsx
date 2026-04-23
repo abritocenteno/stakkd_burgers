@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar, faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
+import { faStar, faMapMarkerAlt, faHeart, faComment } from "@fortawesome/free-solid-svg-icons";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatDate } from "@/lib/utils";
 import { Doc } from "@/convex/_generated/dataModel";
@@ -26,7 +26,7 @@ export function BurgerCard({ burger }: BurgerCardProps) {
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-5xl opacity-15">🍔</span>
+              <span className="text-5xl opacity-15 select-none">🍔</span>
             </div>
           )}
           {/* Score chip */}
@@ -53,7 +53,7 @@ export function BurgerCard({ burger }: BurgerCardProps) {
             </p>
           )}
 
-          <div className="flex items-center gap-2 mt-3 pt-3 border-t border-outline-variant/40">
+          <div className="flex items-center gap-3 mt-3 pt-3 border-t border-outline-variant/40">
             <Avatar className="h-6 w-6">
               {burger.userImageUrl && <AvatarImage src={burger.userImageUrl} alt={burger.userName} />}
               <AvatarFallback className="text-xs bg-primary text-primary-foreground">
@@ -61,7 +61,21 @@ export function BurgerCard({ burger }: BurgerCardProps) {
               </AvatarFallback>
             </Avatar>
             <span className="text-xs text-on-surface-variant">{burger.userName}</span>
-            <span className="text-xs text-on-surface-variant ml-auto">{formatDate(burger.visitedAt)}</span>
+            <div className="ml-auto flex items-center gap-3">
+              {(burger.likeCount ?? 0) > 0 && (
+                <span className="flex items-center gap-1 text-xs text-on-surface-variant">
+                  <FontAwesomeIcon icon={faHeart} className="text-tertiary text-[10px]" />
+                  {burger.likeCount}
+                </span>
+              )}
+              {(burger.commentCount ?? 0) > 0 && (
+                <span className="flex items-center gap-1 text-xs text-on-surface-variant">
+                  <FontAwesomeIcon icon={faComment} className="text-[10px]" />
+                  {burger.commentCount}
+                </span>
+              )}
+              <span className="text-xs text-on-surface-variant">{formatDate(burger.visitedAt)}</span>
+            </div>
           </div>
         </div>
       </article>

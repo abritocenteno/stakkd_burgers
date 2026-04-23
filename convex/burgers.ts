@@ -111,6 +111,33 @@ export const remove = mutation({
   },
 });
 
+export const listByFollowing = query({
+  args: { userId: v.string() },
+  handler: async (ctx, { userId }) => {
+    const follows = await ctx.db
+      .query("follows")
+      .withIndex("by_follower", (q) => q.eq("followerId", userId))
+      .collect();
+
+    if (follows.length === 0) return [];
+
+    const burgersByUser = await Promise.all(
+      follows.map(({ followingId }) =>
+        ctx.db
+          .query("burgerLogs")
+          .withIndex("by_user", (q) => q.eq("userId", followingId))
+          .order("desc")
+          .take(20)
+      )
+    );
+
+    return burgersByUser
+      .flat()
+      .sort((a, b) => b.visitedAt - a.visitedAt)
+      .slice(0, 50);
+  },
+});
+
 export const generateUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {
