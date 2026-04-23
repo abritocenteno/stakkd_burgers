@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCamera, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faCamera, faImage, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 
 const RATING_FIELDS = [
@@ -45,7 +45,8 @@ export default function LogPage() {
   });
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const totalScore =
     Object.values(ratings).reduce((a, b) => a + b, 0) / 6;
@@ -112,27 +113,47 @@ export default function LogPage() {
         {/* Photo */}
         <div>
           <Label className="mb-2 block">Photo</Label>
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="relative w-full h-44 rounded-xl border-2 border-dashed border-border hover:border-primary transition-colors bg-muted/30 flex flex-col items-center justify-center gap-2 overflow-hidden"
-          >
+          <div className="relative w-full h-44 rounded-xl border-2 border-dashed border-border bg-muted/30 overflow-hidden">
             {photoPreview ? (
-              <Image src={photoPreview} alt="Burger preview" fill className="object-cover rounded-xl" />
-            ) : (
               <>
-                <FontAwesomeIcon icon={faCamera} className="text-3xl text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Tap to add a photo</span>
+                <Image src={photoPreview} alt="Burger preview" fill className="object-cover" />
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center gap-3 opacity-0 hover:opacity-100 transition-opacity">
+                  <button type="button" onClick={() => cameraInputRef.current?.click()} className="bg-white/90 text-foreground rounded-lg px-3 py-2 text-sm font-medium flex items-center gap-2">
+                    <FontAwesomeIcon icon={faCamera} />
+                    Retake
+                  </button>
+                  <button type="button" onClick={() => galleryInputRef.current?.click()} className="bg-white/90 text-foreground rounded-lg px-3 py-2 text-sm font-medium flex items-center gap-2">
+                    <FontAwesomeIcon icon={faImage} />
+                    Gallery
+                  </button>
+                </div>
               </>
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+                <span className="text-sm text-muted-foreground">Add a photo</span>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => cameraInputRef.current?.click()}
+                    className="flex items-center gap-2 bg-card border border-border rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-muted transition-colors"
+                  >
+                    <FontAwesomeIcon icon={faCamera} />
+                    Camera
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => galleryInputRef.current?.click()}
+                    className="flex items-center gap-2 bg-card border border-border rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-muted transition-colors"
+                  >
+                    <FontAwesomeIcon icon={faImage} />
+                    Gallery
+                  </button>
+                </div>
+              </div>
             )}
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handlePhoto}
-          />
+          </div>
+          <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handlePhoto} />
+          <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
         </div>
 
         {/* Burger details */}
