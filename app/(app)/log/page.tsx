@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCamera, faImage, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
+import { toast } from "sonner";
 
 const RATING_FIELDS = [
   { key: "taste", label: "Taste" },
@@ -62,7 +63,7 @@ export default function LogPage() {
     e.preventDefault();
     if (!user) return;
     if (Object.values(ratings).some((r) => r === 0)) {
-      alert("Please rate all 6 criteria before saving.");
+      toast.error("Please rate all 6 criteria before saving.");
       return;
     }
 
@@ -93,10 +94,11 @@ export default function LogPage() {
         ...ratings,
       });
 
+      toast.success("Burger logged!", { description: `${burgerName} has been added to your logs.` });
       router.push("/");
     } catch (err) {
       console.error(err);
-      alert("Failed to save. Please try again.");
+      toast.error("Failed to save. Please try again.");
     } finally {
       setLoading(false);
     }

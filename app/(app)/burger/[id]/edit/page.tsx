@@ -15,6 +15,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCamera, faImage, faSpinner, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 import Link from "next/link";
+import { toast } from "sonner";
 
 const RATING_FIELDS = [
   { key: "taste", label: "Taste" },
@@ -83,7 +84,7 @@ export default function EditBurgerPage({ params }: { params: Promise<{ id: strin
     e.preventDefault();
     if (!user || !burger) return;
     if (Object.values(ratings).some((r) => r === 0)) {
-      alert("Please rate all 6 criteria before saving.");
+      toast.error("Please rate all 6 criteria before saving.");
       return;
     }
 
@@ -113,10 +114,11 @@ export default function EditBurgerPage({ params }: { params: Promise<{ id: strin
         ...ratings,
       });
 
+      toast.success("Changes saved!");
       router.push(`/burger/${id}`);
     } catch (err) {
       console.error(err);
-      alert("Failed to save. Please try again.");
+      toast.error("Failed to save. Please try again.");
     } finally {
       setLoading(false);
     }

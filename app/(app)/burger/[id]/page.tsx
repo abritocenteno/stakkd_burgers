@@ -14,6 +14,7 @@ import { faStar, faMapMarkerAlt, faArrowLeft, faPenToSquare, faTrash, faSpinner 
 import Image from "next/image";
 import Link from "next/link";
 import { formatDate } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function BurgerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -31,10 +32,12 @@ export default function BurgerDetailPage({ params }: { params: Promise<{ id: str
     setDeleting(true);
     try {
       await remove({ id: burger._id, userId: user.id });
+      toast.success("Burger log deleted.");
       router.push("/");
     } catch {
       setDeleting(false);
       setConfirmDelete(false);
+      toast.error("Failed to delete. Please try again.");
     }
   };
 

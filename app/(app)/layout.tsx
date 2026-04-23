@@ -1,6 +1,7 @@
 import { TopBar } from "@/components/TopBar";
 import { BottomNav } from "@/components/BottomNav";
 import { Sidebar } from "@/components/Sidebar";
+import { Toaster } from "sonner";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -20,6 +21,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {/* Mobile bottom nav — hidden on desktop */}
         <BottomNav />
       </div>
+      <Toaster position="top-center" richColors closeButton />
     </div>
   );
 }
