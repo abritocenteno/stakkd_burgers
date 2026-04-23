@@ -17,10 +17,10 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex flex-col w-56 shrink-0 sticky top-0 h-screen bg-card border-r border-border p-4">
+    <aside className="hidden md:flex flex-col w-56 shrink-0 sticky top-0 h-screen bg-surface border-r border-outline-variant/40 p-4">
       <Link href="/" className="mb-8 px-2">
-        <h1 className="font-heading font-bold text-2xl text-primary">Stakkd Burgers</h1>
-        <p className="text-xs text-muted-foreground">Track every burger</p>
+        <h1 className="font-heading font-black text-2xl tracking-tight text-primary">Stakkd Burgers</h1>
+        <p className="text-xs text-on-surface-variant mt-0.5">Track every burger</p>
       </Link>
 
       <nav className="flex flex-col gap-1 flex-1">
@@ -30,10 +30,10 @@ export function Sidebar() {
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all squish ${
                 active
                   ? "bg-primary text-primary-foreground"
-                  : "text-foreground/70 hover:bg-muted hover:text-foreground"
+                  : "text-on-surface-variant hover:bg-accent hover:text-on-surface"
               }`}
             >
               <FontAwesomeIcon icon={icon} className="w-4 h-4" />
@@ -43,9 +43,9 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="flex items-center gap-3 px-3 py-2 border-t border-border pt-4">
+      <div className="flex items-center gap-3 px-3 py-3 border-t border-outline-variant/40 mt-2">
         <UserButton />
-        <span className="text-sm text-muted-foreground">Account</span>
+        <span className="text-sm text-on-surface-variant">Account</span>
       </div>
     </aside>
   );

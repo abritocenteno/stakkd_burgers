@@ -1,19 +1,21 @@
 import type { Metadata } from "next";
-import { Fraunces, DM_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, Be_Vietnam_Pro } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import "./globals.css";
 
-const fraunces = Fraunces({
+const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-fraunces",
+  variable: "--font-plus-jakarta",
   display: "swap",
+  weight: ["400", "500", "600", "700", "800"],
 });
 
-const dmSans = DM_Sans({
+const beVietnam = Be_Vietnam_Pro({
   subsets: ["latin"],
-  variable: "--font-dm-sans",
+  variable: "--font-be-vietnam",
   display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -24,7 +26,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${fraunces.variable} ${dmSans.variable} h-full antialiased`}>
+      <html lang="en" className={`${plusJakarta.variable} ${beVietnam.variable} h-full antialiased`}>
         <body className="min-h-full flex flex-col">
           <ConvexClientProvider>{children}</ConvexClientProvider>
         </body>

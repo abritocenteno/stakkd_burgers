@@ -4,7 +4,6 @@ import { useState, useMemo } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { BurgerCard } from "@/components/BurgerCard";
-import { Input } from "@/components/ui/input";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass, faStar, faXmark } from "@fortawesome/free-solid-svg-icons";
 
@@ -30,93 +29,89 @@ export default function DiscoverPage() {
   const hasFilters = query.length > 0 || minScore > 0;
 
   return (
-    <div className="max-w-2xl mx-auto w-full px-4 py-6">
+    <div className="max-w-2xl mx-auto w-full px-5 py-6">
       <div className="mb-5">
-        <h2 className="font-heading font-bold text-2xl sm:text-3xl">Discover</h2>
-        <p className="text-muted-foreground text-sm mt-1">Search burgers and restaurants</p>
+        <h2 className="font-heading font-bold text-2xl sm:text-3xl text-on-surface">Discover</h2>
+        <p className="text-on-surface-variant text-sm mt-1">Search burgers and restaurants</p>
       </div>
 
-      {/* Search input */}
+      {/* Search */}
       <div className="relative mb-4">
         <FontAwesomeIcon
           icon={faMagnifyingGlass}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm"
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-outline text-sm"
         />
-        <Input
+        <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Burger name, restaurant, location…"
-          className="pl-9 pr-9"
+          className="w-full bg-surface-container-low border-0 rounded-2xl py-4 pl-11 pr-11 text-on-surface placeholder:text-outline/60 shadow-inner focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary transition-all"
         />
         {query && (
           <button
             onClick={() => setQuery("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors"
           >
             <FontAwesomeIcon icon={faXmark} />
           </button>
         )}
       </div>
 
-      {/* Min score filter */}
-      <div className="flex items-center gap-3 mb-6">
-        <span className="text-sm text-muted-foreground shrink-0">Min score</span>
-        <div className="flex gap-1">
-          {[0, 1, 2, 3, 4, 5].map((score) => (
+      {/* Score filter chips */}
+      <div className="flex items-center gap-2 mb-6 flex-wrap">
+        <span className="text-sm text-on-surface-variant shrink-0 font-medium">Min score:</span>
+        {[0, 1, 2, 3, 4, 5].map((score) => {
+          const active = score === 0 ? minScore === 0 : minScore === score;
+          return (
             <button
               key={score}
-              onClick={() => setMinScore(score === minScore ? 0 : score)}
-              className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-                minScore === score && score > 0
+              onClick={() => setMinScore(score === minScore && score > 0 ? 0 : score)}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-semibold transition-all squish ${
+                active
                   ? "bg-primary text-primary-foreground"
-                  : score === 0 && minScore === 0
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  : "bg-surface-container text-on-surface-variant hover:bg-accent"
               }`}
             >
               {score === 0 ? (
-                <span className="text-xs">All</span>
+                "All"
               ) : (
-                <span className="flex items-center justify-center gap-0.5">
-                  {score}
-                  <FontAwesomeIcon icon={faStar} style={{ color: "#F5A623" }} className="text-xs" />
-                </span>
+                <><FontAwesomeIcon icon={faStar} style={{ color: active ? "#ffdbcf" : "#7ddc7a" }} className="text-xs" />{score}+</>
               )}
             </button>
-          ))}
-        </div>
+          );
+        })}
         {hasFilters && (
           <button
             onClick={() => { setQuery(""); setMinScore(0); }}
-            className="ml-auto text-xs text-muted-foreground hover:text-foreground underline"
+            className="ml-auto text-xs text-on-surface-variant hover:text-on-surface underline"
           >
             Clear all
           </button>
         )}
       </div>
 
-      {/* Results */}
+      {/* Loading */}
       {burgers === undefined && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-32 rounded-xl bg-muted animate-pulse" />
+            <div key={i} className="rounded-[20px] bg-surface-container animate-pulse" style={{ aspectRatio: "4/3" }} />
           ))}
         </div>
       )}
 
       {burgers !== undefined && (
         <>
-          <p className="text-xs text-muted-foreground mb-3">
+          <p className="text-xs text-on-surface-variant mb-4 font-medium">
             {results.length} {results.length === 1 ? "burger" : "burgers"} found
           </p>
           {results.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <FontAwesomeIcon icon={faMagnifyingGlass} className="text-4xl text-muted-foreground/30 mb-3" />
-              <p className="text-muted-foreground font-medium">No burgers match your search</p>
-              <p className="text-sm text-muted-foreground mt-1">Try a different name or lower the score filter</p>
+              <FontAwesomeIcon icon={faMagnifyingGlass} className="text-4xl text-on-surface-variant/20 mb-4" />
+              <p className="font-heading font-bold text-on-surface-variant">No burgers match your search</p>
+              <p className="text-sm text-on-surface-variant mt-1">Try a different name or lower the score filter</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {results.map((burger) => (
                 <BurgerCard key={burger._id} burger={burger} />
               ))}

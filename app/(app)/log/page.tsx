@@ -7,12 +7,8 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { StarPicker } from "@/components/StarPicker";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCamera, faImage, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faCamera, faImage, faSpinner, faHamburger } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 import { toast } from "sonner";
 
@@ -28,6 +24,9 @@ const RATING_FIELDS = [
 type RatingKey = (typeof RATING_FIELDS)[number]["key"];
 
 const today = () => new Date().toISOString().split("T")[0];
+
+const inputClass =
+  "w-full bg-surface-container-low border-0 rounded-2xl py-4 px-5 text-on-surface placeholder:text-outline/60 shadow-inner focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary transition-all";
 
 export default function LogPage() {
   const router = useRouter();
@@ -49,8 +48,7 @@ export default function LogPage() {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
-  const totalScore =
-    Object.values(ratings).reduce((a, b) => a + b, 0) / 6;
+  const totalScore = Object.values(ratings).reduce((a, b) => a + b, 0) / 6;
 
   const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -105,50 +103,59 @@ export default function LogPage() {
   };
 
   return (
-    <div className="max-w-lg mx-auto w-full px-4 py-6">
+    <div className="max-w-lg mx-auto w-full px-5 py-6">
       <div className="mb-6">
-        <h2 className="font-heading font-bold text-2xl sm:text-3xl">Log a Burger</h2>
-        <p className="text-muted-foreground text-sm mt-1">Tell us about your burger experience</p>
+        <h2 className="font-heading font-bold text-2xl sm:text-3xl text-on-surface">New Review</h2>
+        <p className="text-on-surface-variant text-sm mt-1">Share your latest burger conquest</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Photo */}
-        <div>
-          <Label className="mb-2 block">Photo</Label>
-          <div className="relative w-full h-44 rounded-xl border-2 border-dashed border-border bg-muted/30 overflow-hidden">
+        {/* Photo upload */}
+        <div className="relative">
+          <div className="relative w-full h-56 rounded-[28px] border-2 border-dashed border-outline-variant bg-surface-container-low overflow-hidden">
             {photoPreview ? (
               <>
                 <Image src={photoPreview} alt="Burger preview" fill className="object-cover" />
                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center gap-3 opacity-0 hover:opacity-100 transition-opacity">
-                  <button type="button" onClick={() => cameraInputRef.current?.click()} className="bg-white/90 text-foreground rounded-lg px-3 py-2 text-sm font-medium flex items-center gap-2">
-                    <FontAwesomeIcon icon={faCamera} />
-                    Retake
+                  <button
+                    type="button"
+                    onClick={() => cameraInputRef.current?.click()}
+                    className="bg-surface/90 text-on-surface rounded-full px-4 py-2 text-sm font-medium flex items-center gap-2 squish"
+                  >
+                    <FontAwesomeIcon icon={faCamera} /> Retake
                   </button>
-                  <button type="button" onClick={() => galleryInputRef.current?.click()} className="bg-white/90 text-foreground rounded-lg px-3 py-2 text-sm font-medium flex items-center gap-2">
-                    <FontAwesomeIcon icon={faImage} />
-                    Gallery
+                  <button
+                    type="button"
+                    onClick={() => galleryInputRef.current?.click()}
+                    className="bg-surface/90 text-on-surface rounded-full px-4 py-2 text-sm font-medium flex items-center gap-2 squish"
+                  >
+                    <FontAwesomeIcon icon={faImage} /> Gallery
                   </button>
                 </div>
               </>
             ) : (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-                <span className="text-sm text-muted-foreground">Add a photo</span>
+                <div className="w-16 h-16 bg-primary-fixed rounded-full flex items-center justify-center shadow-md">
+                  <FontAwesomeIcon icon={faCamera} className="text-2xl text-primary" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-semibold text-primary">Upload Photo</p>
+                  <p className="text-xs text-outline mt-0.5">Show us that juicy cross-section</p>
+                </div>
                 <div className="flex gap-3">
                   <button
                     type="button"
                     onClick={() => cameraInputRef.current?.click()}
-                    className="flex items-center gap-2 bg-card border border-border rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-muted transition-colors"
+                    className="flex items-center gap-2 bg-surface border border-outline-variant rounded-full px-4 py-2 text-sm font-medium text-on-surface hover:bg-surface-container squish"
                   >
-                    <FontAwesomeIcon icon={faCamera} />
-                    Camera
+                    <FontAwesomeIcon icon={faCamera} /> Camera
                   </button>
                   <button
                     type="button"
                     onClick={() => galleryInputRef.current?.click()}
-                    className="flex items-center gap-2 bg-card border border-border rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-muted transition-colors"
+                    className="flex items-center gap-2 bg-surface border border-outline-variant rounded-full px-4 py-2 text-sm font-medium text-on-surface hover:bg-surface-container squish"
                   >
-                    <FontAwesomeIcon icon={faImage} />
-                    Gallery
+                    <FontAwesomeIcon icon={faImage} /> Gallery
                   </button>
                 </div>
               </div>
@@ -158,56 +165,59 @@ export default function LogPage() {
           <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto} />
         </div>
 
-        {/* Burger details */}
+        {/* Text fields */}
         <div className="space-y-4">
           <div>
-            <Label htmlFor="burgerName">Burger Name *</Label>
-            <Input
-              id="burgerName"
+            <label className="text-sm font-semibold text-primary-fixed-dim px-1 block mb-1.5">Burger Name *</label>
+            <input
               value={burgerName}
               onChange={(e) => setBurgerName(e.target.value)}
               placeholder="e.g. Double Smash Burger"
               required
-              className="mt-1.5"
+              className={inputClass}
             />
           </div>
           <div>
-            <Label htmlFor="restaurantName">Restaurant *</Label>
-            <Input
-              id="restaurantName"
+            <label className="text-sm font-semibold text-primary-fixed-dim px-1 block mb-1.5">Restaurant *</label>
+            <input
               value={restaurantName}
               onChange={(e) => setRestaurantName(e.target.value)}
               placeholder="e.g. The Burger Joint"
               required
-              className="mt-1.5"
+              className={inputClass}
             />
           </div>
           <div>
-            <Label htmlFor="location">Location</Label>
-            <Input
-              id="location"
+            <label className="text-sm font-semibold text-primary-fixed-dim px-1 block mb-1.5">Location</label>
+            <input
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder="e.g. London, UK"
-              className="mt-1.5"
+              className={inputClass}
             />
           </div>
           <div>
-            <Label htmlFor="visitedAt">Date Visited</Label>
-            <Input
-              id="visitedAt"
+            <label className="text-sm font-semibold text-primary-fixed-dim px-1 block mb-1.5">Date Visited</label>
+            <input
               type="date"
               value={visitedAt}
               onChange={(e) => setVisitedAt(e.target.value)}
               max={today()}
-              className="mt-1.5"
+              className={inputClass}
             />
           </div>
         </div>
 
         {/* Ratings */}
-        <div className="bg-card rounded-xl border border-border p-4 space-y-4">
-          <h3 className="font-heading font-bold text-base">Rate Your Burger</h3>
+        <div className="bg-surface-container-high rounded-[24px] p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-heading font-bold text-base text-on-surface">Rate Your Burger</h3>
+            {Object.values(ratings).every((r) => r > 0) && (
+              <span className="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-xs font-bold">
+                {totalScore.toFixed(1)} / 5
+              </span>
+            )}
+          </div>
           {RATING_FIELDS.map(({ key, label }) => (
             <StarPicker
               key={key}
@@ -216,43 +226,32 @@ export default function LogPage() {
               onChange={(v) => setRatings((prev) => ({ ...prev, [key]: v }))}
             />
           ))}
-          <div className="pt-2 border-t border-border flex items-center justify-between">
-            <span className="font-medium text-sm">Total Score</span>
-            <span className="font-heading font-bold text-lg text-primary">
-              {Object.values(ratings).every((r) => r > 0)
-                ? `${totalScore.toFixed(1)} / 5`
-                : "—"}
-            </span>
-          </div>
         </div>
 
         {/* Notes */}
         <div>
-          <Label htmlFor="notes">Notes / Review</Label>
-          <Textarea
-            id="notes"
+          <label className="text-sm font-semibold text-primary-fixed-dim px-1 block mb-1.5">Notes &amp; Review</label>
+          <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Describe your burger experience..."
-            rows={3}
-            className="mt-1.5 resize-none"
+            placeholder="Describe your burger experience — bun quality, sauce levels, pickle crunch…"
+            rows={4}
+            className={`${inputClass} resize-none`}
           />
         </div>
 
-        <Button
+        {/* Submit */}
+        <button
           type="submit"
           disabled={loading || !burgerName || !restaurantName}
-          className="w-full bg-primary text-primary-foreground font-bold py-3 text-base"
+          className="w-full bg-primary-container text-on-primary-container font-heading font-bold py-5 rounded-[24px] bun-shadow flex items-center justify-center gap-3 squish hover:brightness-105 disabled:opacity-50 disabled:cursor-not-allowed text-lg transition-all"
         >
           {loading ? (
-            <>
-              <FontAwesomeIcon icon={faSpinner} className="animate-spin mr-2" />
-              Saving...
-            </>
+            <><FontAwesomeIcon icon={faSpinner} className="animate-spin" /> Saving…</>
           ) : (
-            "Save Burger Log"
+            <><FontAwesomeIcon icon={faHamburger} /> Log Burger</>
           )}
-        </Button>
+        </button>
       </form>
     </div>
   );
