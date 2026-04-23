@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHouse, faPlus, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faHouse, faPlus, faMagnifyingGlass, faUser } from "@fortawesome/free-solid-svg-icons";
 
 const NAV_ITEMS = [
   { href: "/", icon: faHouse, label: "Feed" },
   { href: "/log", icon: faPlus, label: "Log" },
+  { href: "/discover", icon: faMagnifyingGlass, label: "Discover" },
   { href: "/profile", icon: faUser, label: "Profile" },
 ];
 
