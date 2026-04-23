@@ -6,7 +6,9 @@ import { useUser } from "@clerk/nextjs";
 import { api } from "@/convex/_generated/api";
 import { BurgerCard } from "@/components/BurgerCard";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserGroup } from "@fortawesome/free-solid-svg-icons";
+import { faUserGroup, faStar, faMapMarkerAlt } from "@fortawesome/free-solid-svg-icons";
+import Image from "next/image";
+import Link from "next/link";
 
 type Tab = "all" | "following";
 
@@ -19,6 +21,7 @@ export default function FeedPage() {
     api.burgers.listByFollowing,
     user && tab === "following" ? { userId: user.id } : "skip"
   );
+  const burgerOfMonth = useQuery(api.stats.getBurgerOfTheMonth);
 
   const burgers = tab === "following" ? followingBurgers : allBurgers;
   const loading = burgers === undefined;
@@ -29,6 +32,55 @@ export default function FeedPage() {
         <h2 className="font-heading font-bold text-2xl sm:text-3xl text-on-surface">Feed</h2>
         <p className="text-on-surface-variant text-sm mt-1">See what everyone&apos;s been eating</p>
       </div>
+
+      {/* Burger of the Month */}
+      {burgerOfMonth && (
+        <Link href={`/burger/${burgerOfMonth._id}`}>
+          <article className="relative rounded-[20px] overflow-hidden bun-shadow border border-amber/40 mb-6 squish block">
+            <div className="relative w-full h-44">
+              {burgerOfMonth.photoUrl ? (
+                <Image
+                  src={burgerOfMonth.photoUrl}
+                  alt={burgerOfMonth.burgerName}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 672px"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-surface-container-low flex items-center justify-center">
+                  <span className="text-5xl opacity-20 select-none">🍔</span>
+                </div>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-primary-container/90 via-primary-container/30 to-transparent" />
+
+              {/* Badge */}
+              <div className="absolute top-3 left-3">
+                <span className="bg-amber text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                  🏆 Burger of the Month
+                </span>
+              </div>
+
+              {/* Score chip */}
+              <div className="absolute top-3 right-3 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm">
+                <FontAwesomeIcon icon={faStar} style={{ color: "#7ddc7a" }} className="text-[10px]" />
+                {burgerOfMonth.totalScore.toFixed(1)}
+              </div>
+
+              {/* Title overlay */}
+              <div className="absolute bottom-3 left-4 right-4">
+                <h3 className="font-heading font-bold text-xl text-on-primary-container leading-tight drop-shadow-sm">
+                  {burgerOfMonth.burgerName}
+                </h3>
+                <p className="text-on-primary-container/80 text-sm flex items-center gap-1 mt-0.5">
+                  <FontAwesomeIcon icon={faMapMarkerAlt} className="text-xs" />
+                  {burgerOfMonth.restaurantName}
+                  {burgerOfMonth.location && <span>· {burgerOfMonth.location}</span>}
+                </p>
+              </div>
+            </div>
+          </article>
+        </Link>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-2 mb-6">
@@ -57,7 +109,7 @@ export default function FeedPage() {
         )}
       </div>
 
-      {/* Loading skeletons */}
+      {/* Loading */}
       {loading && (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
@@ -66,7 +118,7 @@ export default function FeedPage() {
         </div>
       )}
 
-      {/* Following — empty state */}
+      {/* Following empty state */}
       {!loading && tab === "following" && burgers?.length === 0 && (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <FontAwesomeIcon icon={faUserGroup} className="text-5xl text-on-surface-variant/20 mb-5" />
@@ -83,7 +135,7 @@ export default function FeedPage() {
         </div>
       )}
 
-      {/* All — empty state */}
+      {/* All empty state */}
       {!loading && tab === "all" && burgers?.length === 0 && (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <div className="text-7xl mb-5 opacity-20 select-none">🍔</div>
