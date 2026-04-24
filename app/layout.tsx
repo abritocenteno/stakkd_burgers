@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Be_Vietnam_Pro } from "next/font/google";
+import { Plus_Jakarta_Sans, Be_Vietnam_Pro, Courgette } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import "./globals.css";
@@ -18,15 +18,22 @@ const beVietnam = Be_Vietnam_Pro({
   weight: ["400", "500", "600", "700"],
 });
 
+const courgette = Courgette({
+  subsets: ["latin"],
+  variable: "--font-courgette",
+  display: "swap",
+  weight: "400",
+});
+
 export const metadata: Metadata = {
-  title: "Stakkd Burgers",
+  title: "Stakk'd",
   description: "Rate and log every burger you eat",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${plusJakarta.variable} ${beVietnam.variable} h-full antialiased`}>
+      <html lang="en" className={`${plusJakarta.variable} ${beVietnam.variable} ${courgette.variable} h-full antialiased`}>
         <body className="min-h-full flex flex-col">
           <ConvexClientProvider>{children}</ConvexClientProvider>
         </body>

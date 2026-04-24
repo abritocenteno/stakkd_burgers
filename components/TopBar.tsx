@@ -7,7 +7,7 @@ export function TopBar() {
   return (
     <header className="md:hidden sticky top-0 z-20 flex items-center justify-between px-5 h-14 bg-surface/90 backdrop-blur-md border-b border-outline-variant/50 shadow-sm">
       <Link href="/">
-        <span className="font-heading font-black text-xl tracking-tight text-primary">Stakkd Burgers</span>
+        <span className="font-brand text-2xl text-primary">Stakk&apos;d</span>
       </Link>
       <UserButton />
     </header>

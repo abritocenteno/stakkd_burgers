@@ -8,6 +8,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-be-vietnam);
   --font-heading: var(--font-plus-jakarta);
+  --font-brand: var(--font-courgette);
 
   /* Stitch Gourmet Playful palette — direct Tailwind color tokens */
   --color-surface: #fbf9f5;

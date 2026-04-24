@@ -416,7 +416,7 @@ export function BurgerDetailClient({ id }: { id: string }) {
           )}
 
           {user ? (
-            <form onSubmit={handleComment} className="flex gap-3 items-end">
+            <form onSubmit={handleComment} className="flex gap-3 items-center">
               <Avatar className="h-8 w-8 shrink-0">
                 {user.imageUrl && <AvatarImage src={user.imageUrl} alt={user.fullName ?? ""} />}
                 <AvatarFallback className="text-xs bg-primary text-primary-foreground font-bold">

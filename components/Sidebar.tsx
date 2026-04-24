@@ -19,7 +19,7 @@ export function Sidebar() {
   return (
     <aside className="hidden md:flex flex-col w-56 shrink-0 sticky top-0 h-screen bg-surface border-r border-outline-variant/40 p-4">
       <Link href="/" className="mb-8 px-2">
-        <h1 className="font-heading font-black text-2xl tracking-tight text-primary">Stakkd Burgers</h1>
+        <h1 className="font-brand text-3xl text-primary">Stakk&apos;d</h1>
         <p className="text-xs text-on-surface-variant mt-0.5">Track every burger</p>
       </Link>
 
