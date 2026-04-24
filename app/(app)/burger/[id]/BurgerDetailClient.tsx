@@ -280,7 +280,14 @@ export function BurgerDetailClient({ id }: { id: string }) {
           </h1>
           <p className="text-on-surface-variant flex items-center gap-1.5 mt-1 text-sm">
             <FontAwesomeIcon icon={faMapMarkerAlt} />
-            {burger.restaurantName}
+            <a
+              href={`https://www.google.com/search?q=${encodeURIComponent(`${burger.restaurantName}${burger.location ? ` ${burger.location}` : ""}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-primary hover:underline transition-colors"
+            >
+              {burger.restaurantName}
+            </a>
             {burger.location && <span>· {burger.location}</span>}
           </p>
           {burger.tags && burger.tags.length > 0 && (
