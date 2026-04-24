@@ -5,7 +5,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { BurgerCard } from "@/components/BurgerCard";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass, faStar, faXmark, faTrophy } from "@fortawesome/free-solid-svg-icons";
+import { faMagnifyingGlass, faStar, faXmark, faTrophy, faTag } from "@fortawesome/free-solid-svg-icons";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 type Tab = "search" | "leaderboard";
@@ -18,6 +18,17 @@ export default function DiscoverPage() {
   const leaderboard = useQuery(api.stats.getLeaderboard);
   const [query, setQuery] = useState("");
   const [minScore, setMinScore] = useState(0);
+  const [activeTag, setActiveTag] = useState<string | null>(null);
+
+  // Collect all unique tags from visible burgers
+  const allTags = useMemo(() => {
+    if (!burgers) return [];
+    const tagSet = new Set<string>();
+    for (const b of burgers) {
+      b.tags?.forEach((t) => tagSet.add(t));
+    }
+    return Array.from(tagSet).sort();
+  }, [burgers]);
 
   const results = useMemo(() => {
     if (!burgers) return [];
@@ -29,11 +40,12 @@ export default function DiscoverPage() {
         b.restaurantName.toLowerCase().includes(q) ||
         b.location?.toLowerCase().includes(q);
       const matchesScore = b.totalScore >= minScore;
-      return matchesQuery && matchesScore;
+      const matchesTag = !activeTag || (b.tags?.includes(activeTag) ?? false);
+      return matchesQuery && matchesScore && matchesTag;
     });
-  }, [burgers, query, minScore]);
+  }, [burgers, query, minScore, activeTag]);
 
-  const hasFilters = query.length > 0 || minScore > 0;
+  const hasFilters = query.length > 0 || minScore > 0 || activeTag !== null;
 
   return (
     <div className="max-w-2xl mx-auto w-full px-5 py-6">
@@ -94,7 +106,7 @@ export default function DiscoverPage() {
           </div>
 
           {/* Score filter chips */}
-          <div className="flex items-center gap-2 mb-6 flex-wrap">
+          <div className="flex items-center gap-2 mb-4 flex-wrap">
             <span className="text-sm text-on-surface-variant shrink-0 font-medium">Min score:</span>
             {[0, 1, 2, 3, 4, 5].map((score) => {
               const active = score === 0 ? minScore === 0 : minScore === score;
@@ -125,13 +137,33 @@ export default function DiscoverPage() {
             })}
             {hasFilters && (
               <button
-                onClick={() => { setQuery(""); setMinScore(0); }}
+                onClick={() => { setQuery(""); setMinScore(0); setActiveTag(null); }}
                 className="ml-auto text-xs text-on-surface-variant hover:text-on-surface underline"
               >
                 Clear all
               </button>
             )}
           </div>
+
+          {/* Tag filter chips — only shown when tags exist */}
+          {allTags.length > 0 && (
+            <div className="flex items-center gap-2 mb-6 flex-wrap">
+              <FontAwesomeIcon icon={faTag} className="text-xs text-on-surface-variant shrink-0" />
+              {allTags.map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => setActiveTag(activeTag === tag ? null : tag)}
+                  className={`text-xs font-semibold px-2.5 py-1 rounded-full transition-all squish ${
+                    activeTag === tag
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-primary/10 text-primary hover:bg-primary/20"
+                  }`}
+                >
+                  #{tag}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Results */}
           {burgers === undefined && (

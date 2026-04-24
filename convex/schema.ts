@@ -12,6 +12,7 @@ export default defineSchema({
     photoStorageId: v.optional(v.id("_storage")),
     photoUrl: v.optional(v.string()),
     notes: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
     visitedAt: v.number(),
     taste: v.number(),
     freshness: v.number(),

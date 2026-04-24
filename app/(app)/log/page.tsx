@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useRef, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { StarPicker } from "@/components/StarPicker";
+import { TagInput } from "@/components/TagInput";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCamera, faImage, faSpinner, faHamburger } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
@@ -28,18 +29,26 @@ const today = () => new Date().toISOString().split("T")[0];
 const inputClass =
   "w-full bg-surface-container-low border-0 rounded-2xl py-4 px-5 text-on-surface placeholder:text-outline/60 shadow-inner focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary transition-all";
 
-export default function LogPage() {
+function LogForm() {
   const router = useRouter();
+  const params = useSearchParams();
   const { user } = useUser();
   const createBurger = useMutation(api.burgers.create);
   const generateUploadUrl = useMutation(api.burgers.generateUploadUrl);
 
+  // Pre-fill from "Log Again" deep-link
+  const prefillBurgerName = params.get("burgerName") ?? "";
+  const prefillRestaurant = params.get("restaurantName") ?? "";
+  const prefillLocation = params.get("location") ?? "";
+  const prefillTags = params.get("tags") ? params.get("tags")!.split(",").filter(Boolean) : [];
+
   const [loading, setLoading] = useState(false);
-  const [burgerName, setBurgerName] = useState("");
-  const [restaurantName, setRestaurantName] = useState("");
-  const [location, setLocation] = useState("");
+  const [burgerName, setBurgerName] = useState(prefillBurgerName);
+  const [restaurantName, setRestaurantName] = useState(prefillRestaurant);
+  const [location, setLocation] = useState(prefillLocation);
   const [notes, setNotes] = useState("");
   const [visitedAt, setVisitedAt] = useState(today());
+  const [tags, setTags] = useState<string[]>(prefillTags);
   const [ratings, setRatings] = useState<Record<RatingKey, number>>({
     taste: 0, freshness: 0, presentation: 0, sides: 0, doneness: 0, value: 0,
   });
@@ -49,6 +58,7 @@ export default function LogPage() {
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const totalScore = Object.values(ratings).reduce((a, b) => a + b, 0) / 6;
+  const isPrefilled = !!prefillBurgerName;
 
   const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -88,6 +98,7 @@ export default function LogPage() {
         location: location || undefined,
         photoStorageId,
         notes: notes || undefined,
+        tags: tags.length > 0 ? tags : undefined,
         visitedAt: new Date(visitedAt).getTime(),
         ...ratings,
       });
@@ -105,8 +116,14 @@ export default function LogPage() {
   return (
     <div className="max-w-lg mx-auto w-full px-5 py-6">
       <div className="mb-6">
-        <h2 className="font-heading font-bold text-2xl sm:text-3xl text-on-surface">New Review</h2>
-        <p className="text-on-surface-variant text-sm mt-1">Share your latest burger conquest</p>
+        <h2 className="font-heading font-bold text-2xl sm:text-3xl text-on-surface">
+          {isPrefilled ? "Log Again" : "New Review"}
+        </h2>
+        <p className="text-on-surface-variant text-sm mt-1">
+          {isPrefilled
+            ? `New visit to ${prefillRestaurant} — how was it this time?`
+            : "Share your latest burger conquest"}
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -206,6 +223,13 @@ export default function LogPage() {
               className={inputClass}
             />
           </div>
+          <div>
+            <label className="text-sm font-semibold text-primary-fixed-dim px-1 block mb-1.5">
+              Tags <span className="font-normal text-outline">(optional · up to 8)</span>
+            </label>
+            <TagInput tags={tags} onChange={setTags} />
+            <p className="text-xs text-outline mt-1.5 px-1">Press Enter or comma to add a tag</p>
+          </div>
         </div>
 
         {/* Ratings */}
@@ -254,5 +278,13 @@ export default function LogPage() {
         </button>
       </form>
     </div>
+  );
+}
+
+export default function LogPage() {
+  return (
+    <Suspense>
+      <LogForm />
+    </Suspense>
   );
 }

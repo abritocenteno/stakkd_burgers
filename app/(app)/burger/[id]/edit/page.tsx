@@ -7,6 +7,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { StarPicker } from "@/components/StarPicker";
+import { TagInput } from "@/components/TagInput";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCamera, faImage, faSpinner, faArrowLeft, faHamburger } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
@@ -41,6 +42,7 @@ export default function EditBurgerPage({ params }: { params: Promise<{ id: strin
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
   const [visitedAt, setVisitedAt] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [ratings, setRatings] = useState<Record<RatingKey, number>>({
     taste: 0, freshness: 0, presentation: 0, sides: 0, doneness: 0, value: 0,
   });
@@ -57,6 +59,7 @@ export default function EditBurgerPage({ params }: { params: Promise<{ id: strin
     setLocation(burger.location ?? "");
     setNotes(burger.notes ?? "");
     setVisitedAt(new Date(burger.visitedAt).toISOString().split("T")[0]);
+    setTags(burger.tags ?? []);
     setRatings({
       taste: burger.taste,
       freshness: burger.freshness,
@@ -108,6 +111,7 @@ export default function EditBurgerPage({ params }: { params: Promise<{ id: strin
         location: location || undefined,
         photoStorageId,
         notes: notes || undefined,
+        tags: tags.length > 0 ? tags : undefined,
         visitedAt: new Date(visitedAt).getTime(),
         ...ratings,
       });
@@ -232,6 +236,13 @@ export default function EditBurgerPage({ params }: { params: Promise<{ id: strin
               max={new Date().toISOString().split("T")[0]}
               className={inputClass}
             />
+          </div>
+          <div>
+            <label className="text-sm font-semibold text-primary-fixed-dim px-1 block mb-1.5">
+              Tags <span className="font-normal text-outline">(optional · up to 8)</span>
+            </label>
+            <TagInput tags={tags} onChange={setTags} />
+            <p className="text-xs text-outline mt-1.5 px-1">Press Enter or comma to add a tag</p>
           </div>
         </div>
 

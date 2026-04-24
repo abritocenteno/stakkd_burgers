@@ -53,6 +53,19 @@ export function BurgerCard({ burger }: BurgerCardProps) {
             </p>
           )}
 
+          {burger.tags && burger.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {burger.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="text-[11px] font-semibold text-primary bg-primary/8 px-2 py-0.5 rounded-full"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+
           <div className="flex items-center gap-3 mt-3 pt-3 border-t border-outline-variant/40">
             <Avatar className="h-6 w-6">
               {burger.userImageUrl && <AvatarImage src={burger.userImageUrl} alt={burger.userName} />}
