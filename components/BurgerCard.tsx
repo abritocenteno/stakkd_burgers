@@ -67,13 +67,15 @@ export function BurgerCard({ burger }: BurgerCardProps) {
           )}
 
           <div className="flex items-center gap-3 mt-3 pt-3 border-t border-outline-variant/40">
-            <Avatar className="h-6 w-6">
-              {burger.userImageUrl && <AvatarImage src={burger.userImageUrl} alt={burger.userName} />}
-              <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-                {burger.userName.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-xs text-on-surface-variant">{burger.userName}</span>
+            <Link href={`/user/${burger.userId}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-2">
+              <Avatar className="h-6 w-6">
+                {burger.userImageUrl && <AvatarImage src={burger.userImageUrl} alt={burger.userName} />}
+                <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+                  {burger.userName.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-xs text-on-surface-variant hover:text-on-surface transition-colors">{burger.userName}</span>
+            </Link>
             <div className="ml-auto flex items-center gap-3">
               {(burger.likeCount ?? 0) > 0 && (
                 <span className="flex items-center gap-1 text-xs text-on-surface-variant">

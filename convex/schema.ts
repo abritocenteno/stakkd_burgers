@@ -9,6 +9,8 @@ export default defineSchema({
     burgerName: v.string(),
     restaurantName: v.string(),
     location: v.optional(v.string()),
+    latitude: v.optional(v.number()),
+    longitude: v.optional(v.number()),
     photoStorageId: v.optional(v.id("_storage")),
     photoUrl: v.optional(v.string()),
     notes: v.optional(v.string()),
@@ -21,7 +23,6 @@ export default defineSchema({
     doneness: v.number(),
     value: v.number(),
     totalScore: v.number(),
-    // Denormalized counts for feed display without N+1 queries
     likeCount: v.optional(v.number()),
     commentCount: v.optional(v.number()),
   })
@@ -53,4 +54,28 @@ export default defineSchema({
     .index("by_follower", ["followerId"])
     .index("by_following", ["followingId"])
     .index("by_follower_following", ["followerId", "followingId"]),
+
+  notifications: defineTable({
+    userId: v.string(),
+    type: v.union(v.literal("like"), v.literal("comment"), v.literal("follow")),
+    fromUserId: v.string(),
+    fromUserName: v.string(),
+    fromUserImageUrl: v.optional(v.string()),
+    burgerId: v.optional(v.id("burgerLogs")),
+    burgerName: v.optional(v.string()),
+    read: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_read", ["userId", "read"]),
+
+  wishlist: defineTable({
+    userId: v.string(),
+    burgerName: v.string(),
+    restaurantName: v.string(),
+    location: v.optional(v.string()),
+    notes: v.optional(v.string()),
+    addedAt: v.number(),
+  })
+    .index("by_user", ["userId"]),
 });

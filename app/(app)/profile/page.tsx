@@ -1,25 +1,28 @@
 "use client";
 
+import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { BurgerCard } from "@/components/BurgerCard";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHamburger, faStar, faTrophy, faUserGroup, faChartLine, faChartBar } from "@fortawesome/free-solid-svg-icons";
+import {
+  faHamburger, faStar, faTrophy, faUserGroup, faChartLine, faChartBar,
+  faBookmark, faTrash, faMapMarkerAlt,
+} from "@fortawesome/free-solid-svg-icons";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   BarChart, Bar, Cell,
 } from "recharts";
+import { toast } from "sonner";
+
+type Tab = "logs" | "wishlist";
 
 const CATEGORY_KEYS = ["taste", "freshness", "presentation", "sides", "doneness", "value"] as const;
 const CATEGORY_LABELS: Record<typeof CATEGORY_KEYS[number], string> = {
-  taste: "Taste",
-  freshness: "Freshness",
-  presentation: "Presentation",
-  sides: "Sides",
-  doneness: "Doneness",
-  value: "Value",
+  taste: "Taste", freshness: "Freshness", presentation: "Presentation",
+  sides: "Sides", doneness: "Doneness", value: "Value",
 };
 
 const avg = (nums: number[]) =>
@@ -27,8 +30,12 @@ const avg = (nums: number[]) =>
 
 export default function ProfilePage() {
   const { user } = useUser();
+  const [tab, setTab] = useState<Tab>("logs");
+
   const burgers = useQuery(api.burgers.listByUser, user ? { userId: user.id } : "skip");
   const followCounts = useQuery(api.social.getFollowCounts, user ? { userId: user.id } : "skip");
+  const wishlist = useQuery(api.wishlist.list, user ? { userId: user.id } : "skip");
+  const removeFromWishlist = useMutation(api.wishlist.remove);
 
   const stats = burgers && burgers.length > 0
     ? {
@@ -40,7 +47,6 @@ export default function ProfilePage() {
     ? { total: 0, avg: 0, best: null }
     : null;
 
-  // Chart data — computed from existing query, no extra round-trip
   const scoreTrend = burgers
     ? [...burgers]
         .sort((a, b) => a.visitedAt - b.visitedAt)
@@ -59,6 +65,16 @@ export default function ProfilePage() {
     : [];
 
   const hasEnoughForCharts = (burgers?.length ?? 0) >= 2;
+
+  const handleRemoveWishlist = async (id: Parameters<typeof removeFromWishlist>[0]["id"]) => {
+    if (!user) return;
+    try {
+      await removeFromWishlist({ id, userId: user.id });
+      toast.success("Removed from wishlist.");
+    } catch {
+      toast.error("Couldn't remove item.");
+    }
+  };
 
   return (
     <div className="max-w-2xl mx-auto w-full px-5 py-6">
@@ -116,10 +132,9 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* Charts — only shown once there are at least 2 logs */}
+      {/* Charts */}
       {hasEnoughForCharts && (
         <div className="space-y-4 mb-8">
-          {/* Score trend */}
           <div className="bg-surface-container-low rounded-[20px] border border-outline-variant/40 p-5 shadow-sm">
             <h3 className="font-heading font-bold text-base text-on-surface mb-4 flex items-center gap-2">
               <FontAwesomeIcon icon={faChartLine} className="text-primary text-sm" />
@@ -133,85 +148,34 @@ export default function ProfilePage() {
                     <stop offset="95%" stopColor="#53352b" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 11, fill: "#504440" }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  domain={[0, 5]}
-                  ticks={[1, 2, 3, 4, 5]}
-                  tick={{ fontSize: 11, fill: "#504440" }}
-                  axisLine={false}
-                  tickLine={false}
-                />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#504440" }} axisLine={false} tickLine={false} />
+                <YAxis domain={[0, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fontSize: 11, fill: "#504440" }} axisLine={false} tickLine={false} />
                 <Tooltip
-                  contentStyle={{
-                    background: "#fbf9f5",
-                    border: "1px solid #d4c3be",
-                    borderRadius: 12,
-                    fontSize: 12,
-                  }}
+                  contentStyle={{ background: "#fbf9f5", border: "1px solid #d4c3be", borderRadius: 12, fontSize: 12 }}
                   formatter={(val) => [typeof val === "number" ? `${val.toFixed(1)} / 5` : val, "Score"]}
                   labelFormatter={(label, payload) => payload?.[0]?.payload?.name ?? label}
                 />
-                <Area
-                  type="monotone"
-                  dataKey="score"
-                  stroke="#53352b"
-                  strokeWidth={2.5}
-                  fill="url(#scoreGrad)"
-                  dot={{ fill: "#53352b", strokeWidth: 0, r: 4 }}
-                  activeDot={{ r: 6, fill: "#53352b" }}
-                />
+                <Area type="monotone" dataKey="score" stroke="#53352b" strokeWidth={2.5} fill="url(#scoreGrad)" dot={{ fill: "#53352b", strokeWidth: 0, r: 4 }} activeDot={{ r: 6, fill: "#53352b" }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
 
-          {/* Category breakdown */}
           <div className="bg-surface-container-low rounded-[20px] border border-outline-variant/40 p-5 shadow-sm">
             <h3 className="font-heading font-bold text-base text-on-surface mb-4 flex items-center gap-2">
               <FontAwesomeIcon icon={faChartBar} className="text-primary text-sm" />
               Rating Breakdown
             </h3>
             <ResponsiveContainer width="100%" height={180}>
-              <BarChart
-                data={categoryBreakdown}
-                layout="vertical"
-                margin={{ top: 0, right: 24, left: 4, bottom: 0 }}
-              >
-                <XAxis
-                  type="number"
-                  domain={[0, 5]}
-                  ticks={[1, 2, 3, 4, 5]}
-                  tick={{ fontSize: 11, fill: "#504440" }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  type="category"
-                  dataKey="category"
-                  tick={{ fontSize: 11, fill: "#504440" }}
-                  axisLine={false}
-                  tickLine={false}
-                  width={78}
-                />
+              <BarChart data={categoryBreakdown} layout="vertical" margin={{ top: 0, right: 24, left: 4, bottom: 0 }}>
+                <XAxis type="number" domain={[0, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fontSize: 11, fill: "#504440" }} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="category" tick={{ fontSize: 11, fill: "#504440" }} axisLine={false} tickLine={false} width={78} />
                 <Tooltip
-                  contentStyle={{
-                    background: "#fbf9f5",
-                    border: "1px solid #d4c3be",
-                    borderRadius: 12,
-                    fontSize: 12,
-                  }}
+                  contentStyle={{ background: "#fbf9f5", border: "1px solid #d4c3be", borderRadius: 12, fontSize: 12 }}
                   formatter={(val) => [typeof val === "number" ? `${val.toFixed(1)} / 5` : val, "Avg"]}
                 />
                 <Bar dataKey="avg" radius={[0, 6, 6, 0]} barSize={14}>
                   {categoryBreakdown.map((entry, i) => (
-                    <Cell
-                      key={i}
-                      fill={entry.avg >= 4 ? "#7ddc7a" : entry.avg >= 3 ? "#53352b" : "#d4c3be"}
-                    />
+                    <Cell key={i} fill={entry.avg >= 4 ? "#7ddc7a" : entry.avg >= 3 ? "#53352b" : "#d4c3be"} />
                   ))}
                 </Bar>
               </BarChart>
@@ -220,31 +184,103 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* Burger list */}
-      <h3 className="font-heading font-bold text-lg text-on-surface mb-4">Your Burger Logs</h3>
+      {/* Tabs */}
+      <div className="flex gap-2 mb-5">
+        <button
+          onClick={() => setTab("logs")}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all squish ${
+            tab === "logs" ? "bg-primary text-primary-foreground" : "bg-surface-container text-on-surface-variant hover:bg-accent"
+          }`}
+        >
+          <FontAwesomeIcon icon={faHamburger} className="text-xs" />
+          Logs
+        </button>
+        <button
+          onClick={() => setTab("wishlist")}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all squish ${
+            tab === "wishlist" ? "bg-primary text-primary-foreground" : "bg-surface-container text-on-surface-variant hover:bg-accent"
+          }`}
+        >
+          <FontAwesomeIcon icon={faBookmark} className="text-xs" />
+          Wishlist
+          {(wishlist?.length ?? 0) > 0 && (
+            <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${tab === "wishlist" ? "bg-primary-foreground/20" : "bg-primary/10 text-primary"}`}>
+              {wishlist!.length}
+            </span>
+          )}
+        </button>
+      </div>
 
-      {burgers === undefined && (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="rounded-[20px] bg-surface-container animate-pulse" style={{ aspectRatio: "4/3" }} />
-          ))}
-        </div>
+      {/* Logs tab */}
+      {tab === "logs" && (
+        <>
+          {burgers === undefined && (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="rounded-[20px] bg-surface-container animate-pulse" style={{ aspectRatio: "4/3" }} />
+              ))}
+            </div>
+          )}
+          {burgers?.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4 opacity-20 select-none">🍔</div>
+              <p className="font-heading font-bold text-on-surface-variant">No burgers logged yet</p>
+              <p className="text-sm text-on-surface-variant mt-1">Hit the Log tab to get started!</p>
+            </div>
+          )}
+          {burgers && burgers.length > 0 && (
+            <div className="space-y-4">
+              {burgers.map((burger) => <BurgerCard key={burger._id} burger={burger} />)}
+            </div>
+          )}
+        </>
       )}
 
-      {burgers?.length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-6xl mb-4 opacity-20 select-none">🍔</div>
-          <p className="font-heading font-bold text-on-surface-variant">No burgers logged yet</p>
-          <p className="text-sm text-on-surface-variant mt-1">Hit the Log tab to get started!</p>
-        </div>
-      )}
-
-      {burgers && burgers.length > 0 && (
-        <div className="space-y-4">
-          {burgers.map((burger) => (
-            <BurgerCard key={burger._id} burger={burger} />
-          ))}
-        </div>
+      {/* Wishlist tab */}
+      {tab === "wishlist" && (
+        <>
+          {wishlist === undefined && (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => <div key={i} className="h-20 rounded-2xl bg-surface-container animate-pulse" />)}
+            </div>
+          )}
+          {wishlist?.length === 0 && (
+            <div className="text-center py-12">
+              <FontAwesomeIcon icon={faBookmark} className="text-5xl text-on-surface-variant/20 mb-4" />
+              <p className="font-heading font-bold text-on-surface-variant">Wishlist is empty</p>
+              <p className="text-sm text-on-surface-variant mt-1">Tap the bookmark on any burger to save it</p>
+            </div>
+          )}
+          {wishlist && wishlist.length > 0 && (
+            <div className="space-y-3">
+              {wishlist.map((item) => (
+                <div key={item._id} className="flex items-start gap-4 p-4 bg-surface-container-low rounded-2xl border border-outline-variant/40 shadow-sm">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <FontAwesomeIcon icon={faBookmark} className="text-primary text-sm" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-heading font-bold text-on-surface text-sm leading-tight">{item.burgerName}</p>
+                    <p className="text-xs text-on-surface-variant flex items-center gap-1 mt-0.5">
+                      <FontAwesomeIcon icon={faMapMarkerAlt} className="text-[10px]" />
+                      {item.restaurantName}
+                      {item.location && <span>· {item.location}</span>}
+                    </p>
+                    {item.notes && (
+                      <p className="text-xs text-on-surface-variant mt-1 line-clamp-1 italic">{item.notes}</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => handleRemoveWishlist(item._id)}
+                    className="text-outline hover:text-destructive transition-colors shrink-0 p-1"
+                    aria-label="Remove from wishlist"
+                  >
+                    <FontAwesomeIcon icon={faTrash} className="text-xs" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

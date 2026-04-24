@@ -9,8 +9,10 @@
  */
 
 import type * as burgers from "../burgers.js";
+import type * as notifications from "../notifications.js";
 import type * as social from "../social.js";
 import type * as stats from "../stats.js";
+import type * as wishlist from "../wishlist.js";
 
 import type {
   ApiFromModules,
@@ -20,8 +22,10 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   burgers: typeof burgers;
+  notifications: typeof notifications;
   social: typeof social;
   stats: typeof stats;
+  wishlist: typeof wishlist;
 }>;
 
 /**

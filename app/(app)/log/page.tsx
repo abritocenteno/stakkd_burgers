@@ -9,7 +9,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { StarPicker } from "@/components/StarPicker";
 import { TagInput } from "@/components/TagInput";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCamera, faImage, faSpinner, faHamburger } from "@fortawesome/free-solid-svg-icons";
+import { faCamera, faImage, faSpinner, faHamburger, faLocationDot } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 import { toast } from "sonner";
 
@@ -49,6 +49,20 @@ function LogForm() {
   const [notes, setNotes] = useState("");
   const [visitedAt, setVisitedAt] = useState(today());
   const [tags, setTags] = useState<string[]>(prefillTags);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [geoLoading, setGeoLoading] = useState(false);
+
+  const handleGeolocate = () => {
+    if (!navigator.geolocation) return;
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setGeoLoading(false);
+      },
+      () => setGeoLoading(false)
+    );
+  };
   const [ratings, setRatings] = useState<Record<RatingKey, number>>({
     taste: 0, freshness: 0, presentation: 0, sides: 0, doneness: 0, value: 0,
   });
@@ -99,6 +113,8 @@ function LogForm() {
         photoStorageId,
         notes: notes || undefined,
         tags: tags.length > 0 ? tags : undefined,
+        latitude: coords?.lat,
+        longitude: coords?.lng,
         visitedAt: new Date(visitedAt).getTime(),
         ...ratings,
       });
@@ -205,7 +221,23 @@ function LogForm() {
             />
           </div>
           <div>
-            <label className="text-sm font-semibold text-primary-fixed-dim px-1 block mb-1.5">Location</label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-sm font-semibold text-primary-fixed-dim px-1">Location</label>
+              <button
+                type="button"
+                onClick={handleGeolocate}
+                disabled={geoLoading}
+                className={`flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full transition-all squish ${
+                  coords ? "bg-secondary/20 text-secondary" : "bg-surface-container text-on-surface-variant hover:bg-accent"
+                } disabled:opacity-60`}
+              >
+                {geoLoading
+                  ? <FontAwesomeIcon icon={faSpinner} className="animate-spin text-[10px]" />
+                  : <FontAwesomeIcon icon={faLocationDot} className="text-[10px]" />
+                }
+                {coords ? "Location saved" : "Use my location"}
+              </button>
+            </div>
             <input
               value={location}
               onChange={(e) => setLocation(e.target.value)}

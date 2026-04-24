@@ -1,14 +1,20 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { BurgerCard } from "@/components/BurgerCard";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass, faStar, faXmark, faTrophy, faTag } from "@fortawesome/free-solid-svg-icons";
+import { faMagnifyingGlass, faStar, faXmark, faTrophy, faTag, faMap } from "@fortawesome/free-solid-svg-icons";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
-type Tab = "search" | "leaderboard";
+const BurgerMap = dynamic(() => import("@/components/BurgerMap").then((m) => m.BurgerMap), {
+  ssr: false,
+  loading: () => <div className="h-[460px] rounded-[20px] bg-surface-container animate-pulse" />,
+});
+
+type Tab = "search" | "leaderboard" | "map";
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
@@ -77,6 +83,17 @@ export default function DiscoverPage() {
         >
           <FontAwesomeIcon icon={faTrophy} className="text-xs" />
           Leaderboard
+        </button>
+        <button
+          onClick={() => setTab("map")}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all squish ${
+            tab === "map"
+              ? "bg-primary text-primary-foreground"
+              : "bg-surface-container text-on-surface-variant hover:bg-accent"
+          }`}
+        >
+          <FontAwesomeIcon icon={faMap} className="text-xs" />
+          Map
         </button>
       </div>
 
@@ -195,6 +212,12 @@ export default function DiscoverPage() {
             </>
           )}
         </>
+      )}
+
+      {/* ── Map tab ── */}
+      {tab === "map" && burgers && <BurgerMap burgers={burgers} />}
+      {tab === "map" && burgers === undefined && (
+        <div className="h-[460px] rounded-[20px] bg-surface-container animate-pulse" />
       )}
 
       {/* ── Leaderboard tab ── */}

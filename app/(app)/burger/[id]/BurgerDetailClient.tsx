@@ -12,8 +12,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faStar, faMapMarkerAlt, faArrowLeft, faPenToSquare, faTrash,
   faSpinner, faHeart, faComment, faUserPlus, faUserCheck, faPaperPlane,
-  faShareNodes, faRotateRight,
+  faShareNodes, faRotateRight, faBookmark,
 } from "@fortawesome/free-solid-svg-icons";
+import { faBookmark as faBookmarkOutline } from "@fortawesome/free-regular-svg-icons";
 import { faHeart as faHeartOutline } from "@fortawesome/free-regular-svg-icons";
 import Image from "next/image";
 import Link from "next/link";
@@ -42,6 +43,26 @@ export function BurgerDetailClient({ id }: { id: string }) {
   const addComment = useMutation(api.social.addComment);
   const deleteComment = useMutation(api.social.deleteComment);
   const toggleFollow = useMutation(api.social.toggleFollow);
+  const addToWishlist = useMutation(api.wishlist.add);
+  const removeFromWishlist = useMutation(api.wishlist.remove);
+  const wishlistItems = useQuery(api.wishlist.list, user ? { userId: user.id } : "skip");
+
+  const wishlisted = wishlistItems?.find((w) => w.burgerName === burger?.burgerName && w.restaurantName === burger?.restaurantName);
+
+  const handleWishlist = async () => {
+    if (!user || !burger) return;
+    try {
+      if (wishlisted) {
+        await removeFromWishlist({ id: wishlisted._id, userId: user.id });
+        toast.success("Removed from wishlist.");
+      } else {
+        await addToWishlist({ userId: user.id, burgerName: burger.burgerName, restaurantName: burger.restaurantName, location: burger.location });
+        toast.success("Saved to wishlist!");
+      }
+    } catch {
+      toast.error("Couldn't update wishlist.");
+    }
+  };
 
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -72,7 +93,7 @@ export function BurgerDetailClient({ id }: { id: string }) {
     if (!user || !burger || liking) return;
     setLiking(true);
     try {
-      const liked = await toggleLike({ burgerId: burger._id, userId: user.id });
+      const liked = await toggleLike({ burgerId: burger._id, userId: user.id, userName: user.fullName ?? user.username ?? "Anonymous", userImageUrl: user.imageUrl });
       if (liked) toast.success("Added to your likes!");
     } catch {
       toast.error("Couldn't update like. Try again.");
@@ -85,7 +106,7 @@ export function BurgerDetailClient({ id }: { id: string }) {
     if (!user || !burger || following_) return;
     setFollowing_(true);
     try {
-      const followed = await toggleFollow({ followerId: user.id, followingId: burger.userId });
+      const followed = await toggleFollow({ followerId: user.id, followerName: user.fullName ?? user.username ?? "Anonymous", followerImageUrl: user.imageUrl, followingId: burger.userId });
       toast.success(followed ? `Following ${burger.userName}!` : `Unfollowed ${burger.userName}.`);
     } catch {
       toast.error("Couldn't update follow. Try again.");
@@ -326,6 +347,21 @@ export function BurgerDetailClient({ id }: { id: string }) {
                 <FontAwesomeIcon icon={userLiked ? faHeart : faHeartOutline} className="text-xs" />
               )}
               {burger.likeCount ?? 0}
+            </button>
+          )}
+
+          {/* Wishlist button */}
+          {user && (
+            <button
+              onClick={handleWishlist}
+              className={`flex items-center justify-center w-9 h-9 rounded-full text-sm transition-all squish ${
+                wishlisted
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-surface-container text-on-surface-variant border border-outline-variant"
+              }`}
+              aria-label={wishlisted ? "Remove from wishlist" : "Save to wishlist"}
+            >
+              <FontAwesomeIcon icon={wishlisted ? faBookmark : faBookmarkOutline} className="text-xs" />
             </button>
           )}
         </div>
