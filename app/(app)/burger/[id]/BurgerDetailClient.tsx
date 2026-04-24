@@ -441,7 +441,7 @@ export function BurgerDetailClient({ id }: { id: string }) {
                 <button
                   type="submit"
                   disabled={!commentText.trim() || submittingComment}
-                  className="absolute right-3 bottom-3 text-secondary disabled:text-outline/40 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary disabled:text-outline/40 transition-colors"
                 >
                   {submittingComment
                     ? <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
